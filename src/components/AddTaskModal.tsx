@@ -11,12 +11,14 @@ import {
   Text,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { useTaskFormStore } from "../store/TaskFormStore";
+
+import { useTaskFormStore } from "../store/TaskFromStore1";
 
 interface AddTaskModalProps {
   opened: boolean;
   onClose: () => void;
-  onAdd: (title: string, description: string, dueDate: string | null) => void;
+  
+  onAdd: (title: string, description: string, dueDate: string | null, assignees: string[]) => void;
 }
 const usersData: Record<string, { image: string; email: string }> = {
   "Emily Johnson": {
@@ -54,15 +56,28 @@ export default function AddTaskModal({
   const {
     title,
     description,
+    assign,
     dueDate,
+    setAssign,
     setTitle,
     setDescription,
     setDueDate,
     resetForm,
   } = useTaskFormStore();
+  const renderMultiSelect: MultiSelectProps['renderOption'] = ({ option }) => (
+  <Group gap="sm">
+    <Avatar src={usersData[option.value].image} size={36} radius="xl" />
+    <div>
+      <Text size="sm">{option.value}</Text>
+      <Text size="xs" opacity={0.5}>
+        {usersData[option.value].email}
+      </Text>
+    </div>
+  </Group>
+);
   const handleAdd = () => {
     if (!title.trim() || !description.trim() || !dueDate) return;
-    onAdd(title, description, dueDate);
+    onAdd( title, description, dueDate ,assign ) ;
     onClose();
     resetForm();
   };
@@ -94,6 +109,19 @@ export default function AddTaskModal({
           error={!dueDate?.trim() ? "Due Date is required" : false}
         />
         {/* เพิ่ม MultiSelect ตรงนี้*/}
+        <MultiSelect
+        label="Assignees"
+        data={['Emily Johnson', 'Ava Rodriguez', 'Olivia Chen', 'Ethan Barnes', 'Mason Taylor']}
+        maxDropdownHeight={300}
+        error={assign.length ===0 ? "Assignee is required" : false}
+        placeholder="Search for Assignees"
+        renderOption={renderMultiSelect}
+        value={assign}
+        withAsterisk
+        searchable
+        hidePickedOptions
+        onChange={(e)=>setAssign(e)}
+    />
         <Button onClick={handleAdd}>Save</Button>
       </Stack>
     </Modal>
